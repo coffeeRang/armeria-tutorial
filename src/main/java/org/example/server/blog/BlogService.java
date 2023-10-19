@@ -2,6 +2,9 @@ package org.example.server.blog;
 
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.server.annotation.Blocking;
+import com.linecorp.armeria.server.annotation.Delete;
+import com.linecorp.armeria.server.annotation.ExceptionHandler;
 import com.linecorp.armeria.server.annotation.Get;
 import com.linecorp.armeria.server.annotation.Param;
 import com.linecorp.armeria.server.annotation.Post;
@@ -43,6 +46,18 @@ public final class BlogService {
         );
         blogPosts.put(id, newBlogPost);
         return HttpResponse.ofJson(newBlogPost);
+    }
+
+    @Blocking
+    @Delete("/blogs/:id")
+    @ExceptionHandler(BadRequestExceptionHandler.class)
+    public HttpResponse deleteBlogPost(@Param int id) {
+        BlogPost removed = blogPosts.remove(id);
+
+        if (removed == null) {
+            throw new IllegalArgumentException("The blog post does not exist. id: " + id);
+        }
+        return HttpResponse.of(HttpStatus.NO_CONTENT);
     }
 
 }
